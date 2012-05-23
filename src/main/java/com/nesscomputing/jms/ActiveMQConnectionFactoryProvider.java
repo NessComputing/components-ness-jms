@@ -28,6 +28,7 @@ import javax.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Binding;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -47,6 +48,8 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
 
     ActiveMQConnectionFactoryProvider(@Nonnull final JmsConfig jmsConfig, @Nonnull final Annotation annotation)
     {
+        Preconditions.checkArgument(annotation != null, "no binding annotation");
+
         this.jmsConfig = jmsConfig;
         this.annotation = annotation;
     }
