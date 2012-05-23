@@ -45,11 +45,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
@@ -57,23 +52,6 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.nesscomputing.service.discovery</groupId>
-      <artifactId>discovery-client</artifactId>
-      <version>${dep.discovery.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.nesscomputing.service.discovery</groupId>
-      <artifactId>discovery-testing</artifactId>
-      <version>${dep.discovery.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>cglib</groupId>
-      <artifactId>cglib-nodep</artifactId>
-      <version>2.2.2</version>
     </dependency>
 
     <dependency>
@@ -134,13 +112,6 @@
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jms_1.1_spec</artifactId>
       <version>1.1.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.nesscomputing.testing</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <optional>true</optional>
-      <version>2.0.0</version>
     </dependency>
 
     <dependency>
