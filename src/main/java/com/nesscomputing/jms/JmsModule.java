@@ -39,11 +39,6 @@ public class JmsModule extends AbstractModule
     private final String connectionName;
 	private final Config config;
 
-	public JmsModule(final Config config)
-    {
-	    this(config, null);
-	}
-
 	public JmsModule(final Config config, final String connectionName)
     {
 	    this.config = config;
@@ -57,41 +52,24 @@ public class JmsModule extends AbstractModule
         final JmsConfig jmsConfig;
 
 
-	    if (connectionName == null) {
-            connectionNamed = null;
-	        jmsConfig = config.getBean(JmsConfig.class);
-	        bind(JmsConfig.class).toInstance(jmsConfig);
-	    }
-	    else {
-	        connectionNamed = Names.named(connectionName);
-	        jmsConfig = config.getBean(JmsConfig.class, ImmutableMap.of("name", connectionName));
-	        bind(JmsConfig.class).annotatedWith(connectionNamed).toInstance(jmsConfig);
-	    }
+        connectionNamed = Names.named(connectionName);
+        jmsConfig = config.getBean(JmsConfig.class, ImmutableMap.of("name", connectionName));
+        bind(JmsConfig.class).annotatedWith(connectionNamed).toInstance(jmsConfig);
 
 	    bind(JsonProducerCallback.class).in(Scopes.SINGLETON);
 
 	    if (jmsConfig.isEnabled()) {
 	        LOG.info("Enabling JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
 
-	        if (connectionName == null) {
-	            bind(ConnectionFactory.class).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, null)).in(Scopes.SINGLETON);
-	            bind(JmsRunnableFactory.class).toInstance(new JmsRunnableFactory(null));
-	        }
-	        else {
-                bind(ConnectionFactory.class).annotatedWith(connectionNamed).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, connectionNamed)).in(Scopes.SINGLETON);
-                bind(JmsRunnableFactory.class).annotatedWith(connectionNamed).toInstance(new JmsRunnableFactory(connectionNamed));
-	        }
+            bind(ConnectionFactory.class).annotatedWith(connectionNamed).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, connectionNamed)).in(Scopes.SINGLETON);
+            bind(JmsRunnableFactory.class).annotatedWith(connectionNamed).toInstance(new JmsRunnableFactory(connectionNamed));
 	    }
 	    else {
             LOG.info("Disabled JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
 	    }
 
 	    if (jmsConfig.isSrvcTransportEnabled()) {
-	        if (connectionNamed == null) {
-	            Multibinder.newSetBinder(binder(), JmsUriInterceptor.class).addBinding().to(DiscoveryJmsUriInterceptor.class);
-	        } else {
-	            Multibinder.newSetBinder(binder(), JmsUriInterceptor.class, connectionNamed).addBinding().to(DiscoveryJmsUriInterceptor.class);
-	        }
+            Multibinder.newSetBinder(binder(), JmsUriInterceptor.class, connectionNamed).addBinding().toInstance(new DiscoveryJmsUriInterceptor(connectionNamed));
 	    }
 	}
 }

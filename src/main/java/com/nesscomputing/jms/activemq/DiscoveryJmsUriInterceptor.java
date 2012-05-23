@@ -20,7 +20,10 @@ import java.util.concurrent.TimeUnit;
 
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.nesscomputing.jms.JmsConfig;
 import com.nesscomputing.jms.JmsUriInterceptor;
 import com.nesscomputing.logging.Log;
@@ -34,9 +37,16 @@ import com.nesscomputing.service.discovery.client.ReadOnlyDiscoveryClient;
 public class DiscoveryJmsUriInterceptor implements JmsUriInterceptor {
     private static final Log LOG = Log.findLog();
     private final UUID injectorId = UUID.randomUUID();
+    private final Named connectionNamed;
+
+    public DiscoveryJmsUriInterceptor(Named connectionNamed)
+    {
+        this.connectionNamed = connectionNamed;
+    }
 
     @Inject(optional=true)
-    void injectDiscoveryClient(JmsConfig config, ReadOnlyDiscoveryClient discoveryClient) {
+    void injectDiscoveryClient(Injector injector, ReadOnlyDiscoveryClient discoveryClient) {
+        JmsConfig config = injector.getInstance(Key.get(JmsConfig.class, connectionNamed));
         LOG.debug("Waiting for world change then registering discovery client " + injectorId);
         // Ensure that we don't register a discovery client until it's had at least one world-change (or give up due to timeout)
         try {

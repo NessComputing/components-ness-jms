@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -46,7 +45,7 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
     private final Annotation annotation;
     private Set<JmsUriInterceptor> interceptors = Collections.emptySet();
 
-    ActiveMQConnectionFactoryProvider(@Nonnull final JmsConfig jmsConfig, @Nullable final Annotation annotation)
+    ActiveMQConnectionFactoryProvider(@Nonnull final JmsConfig jmsConfig, @Nonnull final Annotation annotation)
     {
         this.jmsConfig = jmsConfig;
         this.annotation = annotation;
@@ -57,11 +56,7 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
         TypeLiteral<Set<JmsUriInterceptor>> type = new TypeLiteral<Set<JmsUriInterceptor>>() {};
         final Binding<Set<JmsUriInterceptor>> binding;
 
-        if (annotation == null) {
-            binding = injector.getExistingBinding(Key.get(type));
-        } else {
-            binding = injector.getExistingBinding(Key.get(type, annotation));
-        }
+        binding = injector.getExistingBinding(Key.get(type, annotation));
 
         if (binding != null) {
             interceptors = binding.getProvider().get();
