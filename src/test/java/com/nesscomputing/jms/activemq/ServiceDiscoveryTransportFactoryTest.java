@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
 import com.nesscomputing.jms.JmsModule;
@@ -55,6 +56,7 @@ public class ServiceDiscoveryTransportFactoryTest {
     String uniqueId = UUID.randomUUID().toString();
 
     @Inject
+    @Named("test")
     ConnectionFactory factory;
 
     @Test
@@ -69,7 +71,7 @@ public class ServiceDiscoveryTransportFactoryTest {
             protected void configure() {
 
                 install (new ConfigModule(config));
-                install (new JmsModule(config));
+                install (new JmsModule(config, "test"));
 
                 bind (ReadOnlyDiscoveryClient.class).toInstance(
                     MockedReadOnlyDiscoveryClient.builder().addServiceInformation(vmbrokerInfo).build());
