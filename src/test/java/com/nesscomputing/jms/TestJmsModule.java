@@ -115,7 +115,7 @@ public class TestJmsModule
 
         Guice.createInjector(Stage.PRODUCTION,
                              new ConfigModule(config),
-                             new JmsModule(config));
+                             new JmsModule(config, "test"));
     }
 
     @Test
@@ -125,9 +125,9 @@ public class TestJmsModule
 
         final Injector injector = Guice.createInjector(Stage.PRODUCTION,
                                                        new ConfigModule(config),
-                                                       new JmsModule(config));
+                                                       new JmsModule(config, "test"));
 
-        final JmsConfig jmsConfig = injector.getInstance(JmsConfig.class);
+        final JmsConfig jmsConfig = injector.getInstance(Key.get(JmsConfig.class, Names.named("test")));
         Assert.assertNotNull(jmsConfig);
         Assert.assertFalse(jmsConfig.isEnabled());
         Assert.assertNull(injector.getExistingBinding(Key.get(ConnectionFactory.class)));
@@ -137,16 +137,16 @@ public class TestJmsModule
     public void testWorksWithGlobalUri()
     {
         final Config config = Config.getFixedConfig(ImmutableMap.of("ness.jms.enabled", "true",
-                                                                                          "ness.jms.connection-url", "vm://testbroker?broker.persistent=false"));
+              "ness.jms.connection-url", "vm://testbroker?broker.persistent=false"));
         final Injector injector = Guice.createInjector(Stage.PRODUCTION,
                                                        new ConfigModule(config),
-                                                       new JmsModule(config));
+                                                       new JmsModule(config, "test"));
 
-        final JmsConfig jmsConfig = injector.getInstance(JmsConfig.class);
+        final JmsConfig jmsConfig = injector.getInstance(Key.get(JmsConfig.class, Names.named("test")));
         Assert.assertNotNull(jmsConfig);
         Assert.assertTrue(jmsConfig.isEnabled());
 
-        final ConnectionFactory factory = injector.getInstance(ConnectionFactory.class);
+        final ConnectionFactory factory = injector.getInstance(Key.get(ConnectionFactory.class, Names.named("test")));
         Assert.assertNotNull(factory);
     }
 
@@ -158,14 +158,14 @@ public class TestJmsModule
 
         final Injector injector = Guice.createInjector(Stage.PRODUCTION,
                 new ConfigModule(config),
-                new JmsModule(config),
-                new JmsModule(config, "test"));
+                new JmsModule(config, "test"),
+                new JmsModule(config, "test2"));
 
-        final JmsConfig jmsConfig = injector.getInstance(JmsConfig.class);
+        final JmsConfig jmsConfig = injector.getInstance(Key.get(JmsConfig.class, Names.named("test2")));
         Assert.assertNotNull(jmsConfig);
         Assert.assertTrue(jmsConfig.isEnabled());
 
-        final ConnectionFactory factory = injector.getInstance(ConnectionFactory.class);
+        final ConnectionFactory factory = injector.getInstance(Key.get(ConnectionFactory.class, Names.named("test2")));
         Assert.assertNotNull(factory);
 
         Assert.assertNotNull(injector.getInstance(Key.get(ConnectionFactory.class, Names.named("test"))));
