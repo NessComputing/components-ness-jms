@@ -16,7 +16,7 @@
   <groupId>com.nesscomputing.components</groupId>
   <artifactId>ness-jms</artifactId>
   <name>ness-jms</name>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Managing JMS connections</description>
 
