@@ -17,16 +17,13 @@ package com.nesscomputing.jms;
 
 import javax.jms.ConnectionFactory;
 
-
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.nesscomputing.config.Config;
-import com.nesscomputing.jms.activemq.DiscoveryJmsUriInterceptor;
 import com.nesscomputing.logging.Log;
 
 /**
@@ -67,9 +64,43 @@ public class JmsModule extends AbstractModule
 	    else {
             LOG.info("Disabled JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
 	    }
-
-	    if (jmsConfig.isSrvcTransportEnabled()) {
-            Multibinder.newSetBinder(binder(), JmsUriInterceptor.class, connectionNamed).addBinding().toInstance(new DiscoveryJmsUriInterceptor(connectionNamed));
-	    }
 	}
+
+	// NOTE: we intentionally check if the Config is the same, we consider it an error to install two
+	// different modules unless the Config is precisely the same as well.
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((config == null) ? 0 : config.hashCode());
+        result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        JmsModule other = (JmsModule) obj;
+        if (config == null)
+        {
+            if (other.config != null)
+                return false;
+        } else if (!config.equals(other.config))
+            return false;
+        if (connectionName == null)
+        {
+            if (other.connectionName != null)
+                return false;
+        } else if (!connectionName.equals(other.connectionName))
+            return false;
+        return true;
+    }
 }
