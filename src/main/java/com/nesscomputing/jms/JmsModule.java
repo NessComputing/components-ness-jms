@@ -58,7 +58,7 @@ public class JmsModule extends AbstractModule
 	    if (jmsConfig.isEnabled()) {
 	        LOG.info("Enabling JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
 
-            bind(ConnectionFactory.class).annotatedWith(connectionNamed).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, connectionNamed)).in(Scopes.SINGLETON);
+            bind(ConnectionFactory.class).annotatedWith(connectionNamed).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, connectionName, connectionNamed)).in(Scopes.SINGLETON);
             bind(JmsRunnableFactory.class).annotatedWith(connectionNamed).toInstance(new JmsRunnableFactory(connectionNamed));
 	    }
 	    else {
@@ -88,7 +88,7 @@ public class JmsModule extends AbstractModule
             return false;
         if (getClass() != obj.getClass())
             return false;
-        JmsModule other = (JmsModule) obj;
+        final JmsModule other = (JmsModule) obj;
         if (config == null)
         {
             if (other.config != null)

@@ -29,6 +29,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.inject.Binding;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -45,9 +46,11 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
     private final JmsConfig jmsConfig;
     private final Annotation annotation;
     private Set<JmsUriInterceptor> interceptors = Collections.emptySet();
+    private final String connectionName;
 
-    ActiveMQConnectionFactoryProvider(@Nonnull final JmsConfig jmsConfig, @Nonnull final Annotation annotation)
+    ActiveMQConnectionFactoryProvider(@Nonnull final JmsConfig jmsConfig, @Nonnull final String connectionName, @Nonnull final Annotation annotation)
     {
+        this.connectionName = connectionName;
         Preconditions.checkArgument(annotation != null, "no binding annotation");
 
         this.jmsConfig = jmsConfig;
@@ -56,13 +59,18 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
 
     @Inject
     public void injectInjector(Injector injector) {
-        TypeLiteral<Set<JmsUriInterceptor>> type = new TypeLiteral<Set<JmsUriInterceptor>>() {};
-        final Binding<Set<JmsUriInterceptor>> binding;
+        final TypeLiteral<Set<JmsUriInterceptor>> type = new TypeLiteral<Set<JmsUriInterceptor>>() {};
 
-        binding = injector.getExistingBinding(Key.get(type, annotation));
+        Binding<Set<JmsUriInterceptor>> binding  = injector.getExistingBinding(Key.get(type, annotation));
 
         if (binding != null) {
-            interceptors = binding.getProvider().get();
+            interceptors = Sets.union(interceptors, binding.getProvider().get());
+        }
+
+        binding = injector.getExistingBinding(Key.get(type));
+
+        if (binding != null) {
+            interceptors = Sets.union(interceptors, binding.getProvider().get());
         }
     }
 
@@ -75,11 +83,11 @@ final class ActiveMQConnectionFactoryProvider implements Provider<ConnectionFact
             throw new ProvisionException(format("JMS URI for %s can not be blank!", annotation == null ? "<default>" : annotation));
         }
 
-        for (JmsUriInterceptor interceptor : interceptors) {
-            jmsUriStr = interceptor.apply(jmsUriStr);
+        for (final JmsUriInterceptor interceptor : interceptors) {
+            jmsUriStr = interceptor.transform(connectionName, jmsUriStr);
         }
 
-        URI jmsUri = URI.create(jmsUriStr);
+        final URI jmsUri = URI.create(jmsUriStr);
 
         return new ActiveMQConnectionFactory(jmsUri);
     }

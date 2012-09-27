@@ -15,9 +15,9 @@
  */
 package com.nesscomputing.jms;
 
-import com.google.common.base.Function;
-
 /**
  * Transform a configured JMS uri before it is connected to
  */
-public interface JmsUriInterceptor extends Function<String, String> { }
+public interface JmsUriInterceptor {
+    String transform(String connectionName, String originalUri);
+}
