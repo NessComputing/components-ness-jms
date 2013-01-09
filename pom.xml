@@ -11,13 +11,13 @@
     <connection>scm:git:git://github.com/NessComputing/components-ness-jms.git</connection>
     <developerConnection>scm:git:git@github.com:NessComputing/components-ness-jms.git</developerConnection>
     <url>http://github.com/NessComputing/components-ness-jms</url>
-    <tag>HEAD</tag>
+    <tag>ness-jms-1.2.0</tag>
   </scm>
 
   <groupId>com.nesscomputing.components</groupId>
   <artifactId>ness-jms</artifactId>
   <name>ness-jms</name>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.2.0</version>
   <packaging>jar</packaging>
   <description>Managing JMS connections</description>
 
