@@ -140,7 +140,7 @@ public abstract class AbstractJmsRunnable implements Runnable
         sessionDisconnect();
     }
 
-    protected final String getName()
+    public final String getName()
     {
         return name;
     }
