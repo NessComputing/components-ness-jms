@@ -20,23 +20,19 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.name.Named;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
-import com.nesscomputing.jms.ConsumerCallback;
-import com.nesscomputing.jms.JmsModule;
-import com.nesscomputing.jms.JmsRunnableFactory;
-import com.nesscomputing.jms.TopicConsumer;
-import com.nesscomputing.jms.TopicProducer;
 
 public class TestStrangeStuff
 {
@@ -86,7 +82,9 @@ public class TestStrangeStuff
             topicProducer.put("dummy");
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertTrue(topicProducer.isConnected());
         Assert.assertFalse(topicConsumer.isConnected());
@@ -130,7 +128,9 @@ public class TestStrangeStuff
             }
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertTrue(topicProducer.isConnected());
         Assert.assertFalse(topicConsumer.isConnected());
@@ -166,7 +166,7 @@ public class TestStrangeStuff
         Assert.assertTrue(topicConsumer.isConnected());
         Assert.assertFalse(topicProducer.isConnected());
 
-        final int maxCount = 1000;
+        final int maxCount = 10000;
         int i = 0;
 
         for (i = 0; i < maxCount; i++) {

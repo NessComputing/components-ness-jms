@@ -22,6 +22,12 @@ import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Stage;
+import com.google.inject.name.Named;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.AfterClass;
@@ -30,18 +36,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Stage;
-import com.google.inject.name.Named;
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
-import com.nesscomputing.jms.JmsModule;
-import com.nesscomputing.jms.JmsRunnableFactory;
-import com.nesscomputing.jms.TopicConsumer;
-import com.nesscomputing.jms.TopicProducer;
 import com.nesscomputing.jms.util.CountingMessageCallback;
 import com.nesscomputing.jms.util.DummyMessageCallback;
 import com.nesscomputing.testing.lessio.AllowDNSResolution;
@@ -161,7 +157,9 @@ public class TestTopicFactory
             topicProducer.put(format("hello, world %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc.getCount());
 
@@ -199,7 +197,9 @@ public class TestTopicFactory
             topicProducer.put(format("hello, world %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc1.getCount());
         Assert.assertEquals(maxCount, cmc2.getCount());
@@ -242,7 +242,9 @@ public class TestTopicFactory
             topicProducer2.put(format("hello, wold %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !topicProducer1.isEmpty() && !topicProducer2.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(topicProducer1.isEmpty());
         Assert.assertTrue(topicProducer2.isEmpty());
         Assert.assertEquals(maxCount*2, cmc.getCount());
