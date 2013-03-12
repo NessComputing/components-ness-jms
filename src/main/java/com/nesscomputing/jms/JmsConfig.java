@@ -95,10 +95,10 @@ public abstract class JmsConfig
      * Internal queue length for the producer thread.
      */
     @Config({"ness.jms.${name}.producer-queue-length", "ness.jms.producer-queue-length"})
-    @Default("20")
+    @Default("2000")
     public int getProducerQueueLength()
     {
-        return 20;
+        return 2000;
     }
 
 
@@ -108,10 +108,10 @@ public abstract class JmsConfig
      * gives up and drops the event.
      */
     @Config({"ness.jms.${name}.transmit-timeout", "ness.jms.transmit-timeout"})
-    @Default("10ms")
+    @Default("100ms")
     public TimeSpan getTransmitTimeout()
     {
-        return new TimeSpan("10ms");
+        return new TimeSpan("100ms");
     }
 
     /**
