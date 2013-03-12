@@ -18,9 +18,8 @@ package com.nesscomputing.jms;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nonnull;
 import javax.jms.ConnectionFactory;
@@ -30,18 +29,20 @@ import javax.jms.MessageProducer;
 
 import com.google.common.base.Preconditions;
 
+import com.nesscomputing.logging.Log;
+
 /**
  * A general runnable that will keep the connection to a topic or queue alive and enqueue messages.
  */
 public abstract class AbstractProducer<T> extends AbstractJmsRunnable
 {
-    private MessageProducer producer = null;
+    private static final Log LOG = Log.findLog();
 
-    private final AtomicLong cooloffTime = new AtomicLong(-1L);
+    private MessageProducer producer = null;
 
     private final BlockingQueue<T> messageQueue;
     private final ProducerCallback<T> producerCallback;
-    private final Semaphore queueSemaphore = new Semaphore(0);
+    private final AtomicBoolean initialSleepSkipped = new AtomicBoolean();
 
     protected AbstractProducer(@Nonnull final ConnectionFactory connectionFactory,
                                @Nonnull final JmsConfig jmsConfig,
@@ -63,16 +64,7 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
     public boolean offer(@Nonnull final T data)
     {
         Preconditions.checkArgument(data != null, "the message can not be null!");
-
-        final boolean success = messageQueue.offer(data);
-
-        if (success) {
-            queueSemaphore.release(1);
-        }
-        else {
-            updateCooloff();
-        }
-        return success;
+        return messageQueue.offer(data);
     }
 
     public boolean offerWithTimeout(@Nonnull final T data)
@@ -82,17 +74,9 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
 
         try {
             success = messageQueue.offer(data, getConfig().getTransmitTimeout().getPeriod(), getConfig().getTransmitTimeout().getUnit());
-
-            if (success) {
-                queueSemaphore.release(1);
-            }
-            else {
-                updateCooloff();
-            }
         }
         catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            updateCooloff();
         }
         return success;
     }
@@ -100,23 +84,7 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
     public boolean offerWithTimeout(@Nonnull final T data, final long timeout, final TimeUnit unit) throws InterruptedException
     {
         Preconditions.checkArgument(data != null, "the message can not be null!");
-        boolean success = false;
-
-        try {
-            success = messageQueue.offer(data, timeout, unit);
-
-            if (success) {
-                queueSemaphore.release(1);
-            }
-            else {
-                updateCooloff();
-            }
-        }
-        catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            updateCooloff();
-        }
-        return success;
+        return messageQueue.offer(data, timeout, unit);
     }
 
     public void put(@Nonnull final T data)
@@ -124,11 +92,9 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
         Preconditions.checkArgument(data != null, "the message can not be null!");
         try {
             messageQueue.put(data);
-            queueSemaphore.release(1);
         }
         catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            updateCooloff();
         }
     }
 
@@ -159,49 +125,21 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
             sessionConnect();
         }
 
-        boolean permit = queueSemaphore.tryAcquire(getConfig().getTickTimeout().getPeriod(), getConfig().getTickTimeout().getUnit());
+        // This outer loop only happens once at startup and then again every time we bail due to an error
+        if (initialSleepSkipped.compareAndSet(false, true)) {
+            Thread.sleep(getConfig().getFailureCooloffTime().getMillis());
+        }
 
-        T data = null;
-        try {
-            while ((data = messageQueue.peek()) != null) {
-                // Remove a permit for the object we process. It is actually possible that
-                // two permits are pulled for one object (one above and one now), but that does
-                // not matter, because this look will drain the queue anyway and if there are permits
-                // left if the queue is empty, all that happens are a couple of spurious wakeups (the tryAcquire with
-                // timeout will consume them). It should not be possible to leave this loop and have no permits and
-                // still objects in the queue (because permits are only removed when objects exist).
-                if (!permit) {
-                    permit = queueSemaphore.tryAcquire();
-                }
-                final Message message = producerCallback.buildMessage(this, data);
-                if (message == null) {
-                    // In cooloff timeout.
-                    break;
-                }
-                producer.send(message);
-                messageQueue.poll();
-                permit = false;
+        while (true) {
+            T data = messageQueue.take();
+            final Message message = producerCallback.buildMessage(this, data);
+            if (message == null) {
+                LOG.warn("Dropping message '%s' because %s failed to build a JMS Message.", data, producerCallback);
+                // In cooloff timeout.
+                break;
             }
-            clearCooloff();
-        }
-        catch (IOException ioe) {
-            updateCooloff();
-            throw ioe;
-        }
-        catch (JMSException je) {
-            updateCooloff();
-            throw je;
+            producer.send(message);
         }
         return true;
-    }
-
-    private void updateCooloff()
-    {
-        this.cooloffTime.compareAndSet(-1L, System.nanoTime() + getConfig().getFailureCooloffTime().getMillis() * 1000000L);
-    }
-
-    private void clearCooloff()
-    {
-        this.cooloffTime.set(-1L);
     }
 }
