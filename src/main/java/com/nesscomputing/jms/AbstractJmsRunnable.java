@@ -15,8 +15,6 @@
  */
 package com.nesscomputing.jms;
 
-import com.nesscomputing.logging.Log;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Serializable;
@@ -38,6 +36,8 @@ import javax.jms.TextMessage;
 
 import com.google.common.base.Preconditions;
 
+import com.nesscomputing.logging.Log;
+
 /**
  * Base code for the topic and queue runnables.
  */
@@ -45,10 +45,10 @@ public abstract class AbstractJmsRunnable implements Runnable
 {
     protected final Log LOG = Log.forClass(this.getClass());
 
-    private AtomicReference<Connection> connectionHolder = new AtomicReference<Connection>();
-    private AtomicReference<Session> sessionHolder = new AtomicReference<Session>();
-    private AtomicBoolean running = new AtomicBoolean(true);
-    private AtomicBoolean connected = new AtomicBoolean(false);
+    private final AtomicReference<Connection> connectionHolder = new AtomicReference<Connection>();
+    private final AtomicReference<Session> sessionHolder = new AtomicReference<Session>();
+    private final AtomicBoolean running = new AtomicBoolean(true);
+    private final AtomicBoolean connected = new AtomicBoolean(false);
 
     private int backoff = 1;
 
@@ -140,7 +140,7 @@ public abstract class AbstractJmsRunnable implements Runnable
         sessionDisconnect();
     }
 
-    protected final String getName()
+    public final String getName()
     {
         return name;
     }
