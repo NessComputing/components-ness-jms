@@ -15,8 +15,6 @@
  */
 package com.nesscomputing.jms;
 
-import com.nesscomputing.logging.Log;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Serializable;
@@ -37,6 +35,8 @@ import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
 import com.google.common.base.Preconditions;
+
+import com.nesscomputing.logging.Log;
 
 /**
  * Base code for the topic and queue runnables.
