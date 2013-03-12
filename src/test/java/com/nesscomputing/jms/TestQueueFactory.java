@@ -22,6 +22,12 @@ import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Stage;
+import com.google.inject.name.Named;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.junit.AfterClass;
@@ -30,18 +36,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Stage;
-import com.google.inject.name.Named;
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
-import com.nesscomputing.jms.JmsModule;
-import com.nesscomputing.jms.JmsRunnableFactory;
-import com.nesscomputing.jms.QueueConsumer;
-import com.nesscomputing.jms.QueueProducer;
 import com.nesscomputing.jms.util.CountingMessageCallback;
 import com.nesscomputing.jms.util.DummyMessageCallback;
 import com.nesscomputing.testing.lessio.AllowDNSResolution;
@@ -159,7 +155,9 @@ public class TestQueueFactory
             queueProducer.put(format("hello, world %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !queueProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(queueProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc.getCount());
 
@@ -197,7 +195,9 @@ public class TestQueueFactory
             queueProducer.put(format("hello, world %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !queueProducer.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(queueProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc1.getCount() + cmc2.getCount());
 
@@ -239,7 +239,9 @@ public class TestQueueFactory
             queueProducer2.put(format("hello, wold %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !queueProducer1.isEmpty() && !queueProducer2.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
         Assert.assertTrue(queueProducer1.isEmpty());
         Assert.assertTrue(queueProducer2.isEmpty());
         Assert.assertEquals(maxCount*2, cmc.getCount());
@@ -287,7 +289,9 @@ public class TestQueueFactory
             queueProducer2.put(format("hello, wold %d", i));
         }
 
-        Thread.sleep(100L);
+        for (int i = 0; i < 100 && !queueProducer1.isEmpty() && !queueProducer2.isEmpty(); i++) {
+            Thread.sleep(10L);
+        }
 
         Assert.assertTrue(queueProducer1.isEmpty());
         Assert.assertTrue(queueProducer2.isEmpty());
