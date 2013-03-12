@@ -103,6 +103,11 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
         return messageQueue.remainingCapacity();
     }
 
+    public int size()
+    {
+        return messageQueue.size();
+    }
+
     public boolean isEmpty()
     {
         return messageQueue.isEmpty();
@@ -133,12 +138,14 @@ public abstract class AbstractProducer<T> extends AbstractJmsRunnable
         while (true) {
             T data = messageQueue.take();
             final Message message = producerCallback.buildMessage(this, data);
+            long startNanos = System.nanoTime();
             if (message == null) {
                 LOG.warn("Dropping message '%s' because %s failed to build a JMS Message.", data, producerCallback);
                 // In cooloff timeout.
                 break;
             }
             producer.send(message);
+            LOG.trace("Sent message '%s' in %sus, queue size now %s", message, TimeUnit.MICROSECONDS.convert(System.nanoTime() - startNanos, TimeUnit.NANOSECONDS), size());
         }
         return true;
     }
