@@ -18,6 +18,7 @@ package com.nesscomputing.jms;
 import static java.lang.String.format;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -154,12 +155,15 @@ public class TestTopicFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            topicProducer.put(format("hello, world %d", i));
+            Assert.assertTrue(topicProducer.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
         }
 
         for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
             Thread.sleep(10L);
         }
+
+        Thread.sleep(100L);
+
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc.getCount());
 
@@ -194,7 +198,7 @@ public class TestTopicFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            topicProducer.put(format("hello, world %d", i));
+            Assert.assertTrue(topicProducer.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
         }
 
         for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
@@ -238,13 +242,15 @@ public class TestTopicFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            topicProducer1.put(format("hello, world %d", i));
-            topicProducer2.put(format("hello, wold %d", i));
+            Assert.assertTrue(topicProducer1.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
+            Assert.assertTrue(topicProducer2.offerWithTimeout(format("hello, wold %d", i), 1, TimeUnit.SECONDS));
         }
 
-        for (int i = 0; i < 100 && !topicProducer1.isEmpty() && !topicProducer2.isEmpty(); i++) {
+        for (int i = 0; i < 100 && !(topicProducer1.isEmpty() && topicProducer2.isEmpty()); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(topicProducer1.isEmpty());
         Assert.assertTrue(topicProducer2.isEmpty());
         Assert.assertEquals(maxCount*2, cmc.getCount());
@@ -288,11 +294,14 @@ public class TestTopicFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            topicProducer1.put(format("hello, world %d", i));
-            topicProducer2.put(format("hello, wold %d", i));
+            Assert.assertTrue(topicProducer1.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
+            Assert.assertTrue(topicProducer2.offerWithTimeout(format("hello, wold %d", i), 1, TimeUnit.SECONDS));
         }
 
-        Thread.sleep(500L);
+        for (int i = 0; i < 100 && !(topicProducer1.isEmpty() && topicProducer2.isEmpty()); i++) {
+            Thread.sleep(10L);
+        }
+        Thread.sleep(100L);
 
         Assert.assertTrue(topicProducer1.isEmpty());
         Assert.assertTrue(topicProducer2.isEmpty());

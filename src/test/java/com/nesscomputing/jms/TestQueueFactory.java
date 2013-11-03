@@ -18,6 +18,7 @@ package com.nesscomputing.jms;
 import static java.lang.String.format;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -152,12 +153,14 @@ public class TestQueueFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            queueProducer.put(format("hello, world %d", i));
+            Assert.assertTrue(queueProducer.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
         }
 
         for (int i = 0; i < 100 && !queueProducer.isEmpty(); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(queueProducer.isEmpty());
         Assert.assertEquals(maxCount, cmc.getCount());
 
@@ -198,8 +201,12 @@ public class TestQueueFactory
         for (int i = 0; i < 100 && !queueProducer.isEmpty(); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(queueProducer.isEmpty());
-        Assert.assertEquals(maxCount, cmc1.getCount() + cmc2.getCount());
+        int c1 = cmc1.getCount();
+        int c2 = cmc2.getCount();
+        Assert.assertEquals(maxCount, c1 + c2);
 
         queueProducer.shutdown();
         queueConsumer1.shutdown();
@@ -239,9 +246,11 @@ public class TestQueueFactory
             queueProducer2.put(format("hello, wold %d", i));
         }
 
-        for (int i = 0; i < 100 && !queueProducer1.isEmpty() && !queueProducer2.isEmpty(); i++) {
+        for (int i = 0; i < 100 && !(queueProducer1.isEmpty() && queueProducer2.isEmpty()); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(queueProducer1.isEmpty());
         Assert.assertTrue(queueProducer2.isEmpty());
         Assert.assertEquals(maxCount*2, cmc.getCount());
@@ -285,13 +294,14 @@ public class TestQueueFactory
 
         final int maxCount = 1000;
         for (int i = 0; i < maxCount; i++) {
-            queueProducer1.put(format("hello, world %d", i));
-            queueProducer2.put(format("hello, wold %d", i));
+            Assert.assertTrue(queueProducer1.offerWithTimeout(format("hello, world %d", i), 1, TimeUnit.SECONDS));
+            Assert.assertTrue(queueProducer2.offerWithTimeout(format("hello, wold %d", i), 1, TimeUnit.SECONDS));
         }
 
-        for (int i = 0; i < 100 && !queueProducer1.isEmpty() && !queueProducer2.isEmpty(); i++) {
+        for (int i = 0; i < 100 && !(queueProducer1.isEmpty() && queueProducer2.isEmpty()); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
 
         Assert.assertTrue(queueProducer1.isEmpty());
         Assert.assertTrue(queueProducer2.isEmpty());
