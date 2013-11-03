@@ -34,73 +34,81 @@ public class JmsModule extends AbstractModule
     private static final Log LOG = Log.findLog();
 
     private final String connectionName;
-	private final Config config;
+    private final Config config;
 
-	public JmsModule(final Config config, final String connectionName)
+    public JmsModule(final Config config, final String connectionName)
     {
-	    this.config = config;
+        this.config = config;
         this.connectionName = connectionName;
-	}
+    }
 
-	@Override
-	protected void configure()
+    @Override
+    protected void configure()
     {
         final Named connectionNamed;
         final JmsConfig jmsConfig;
-
 
         connectionNamed = Names.named(connectionName);
         jmsConfig = config.getBean(JmsConfig.class, ImmutableMap.of("name", connectionName));
         bind(JmsConfig.class).annotatedWith(connectionNamed).toInstance(jmsConfig);
 
-	    bind(JsonProducerCallback.class).in(Scopes.SINGLETON);
+        bind(JsonProducerCallback.class).in(Scopes.SINGLETON);
 
-	    if (jmsConfig.isEnabled()) {
-	        LOG.info("Enabling JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
+        if (jmsConfig.isEnabled()) {
+            LOG.info("Enabling JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
 
             bind(ConnectionFactory.class).annotatedWith(connectionNamed).toProvider(new ActiveMQConnectionFactoryProvider(jmsConfig, connectionName, connectionNamed)).in(Scopes.SINGLETON);
             bind(JmsRunnableFactory.class).annotatedWith(connectionNamed).toInstance(new JmsRunnableFactory(connectionNamed));
-	    }
-	    else {
+        }
+        else {
             LOG.info("Disabled JMS for '%s'", Objects.firstNonNull(connectionName, "<default>"));
-	    }
-	}
+        }
+    }
 
-	// NOTE: we intentionally check if the Config is the same, we consider it an error to install two
-	// different modules unless the Config is precisely the same as well.
+    // NOTE: we intentionally check if the Config is the same, we consider it an error to install two
+    // different modules unless the Config is precisely the same as well.
 
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((config == null) ? 0 : config.hashCode());
-        result = prime * result + ((connectionName == null) ? 0 : connectionName.hashCode());
+        result = prime * result + (config == null ? 0 : config.hashCode());
+        result = prime * result + (connectionName == null ? 0 : connectionName.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final JmsModule other = (JmsModule) obj;
         if (config == null)
         {
-            if (other.config != null)
+            if (other.config != null) {
                 return false;
-        } else if (!config.equals(other.config))
+            }
+        }
+        else if (!config.equals(other.config)) {
             return false;
+        }
         if (connectionName == null)
         {
-            if (other.connectionName != null)
+            if (other.connectionName != null) {
                 return false;
-        } else if (!connectionName.equals(other.connectionName))
+            }
+        }
+        else if (!connectionName.equals(other.connectionName)) {
             return false;
+        }
         return true;
     }
 }
