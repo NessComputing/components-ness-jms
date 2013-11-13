@@ -28,13 +28,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.name.Named;
+
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
-import com.nesscomputing.jms.ConsumerCallback;
-import com.nesscomputing.jms.JmsModule;
-import com.nesscomputing.jms.JmsRunnableFactory;
-import com.nesscomputing.jms.TopicConsumer;
-import com.nesscomputing.jms.TopicProducer;
 
 public class TestUnknownCaller
 {
@@ -46,7 +42,7 @@ public class TestUnknownCaller
     public void setUp()
     {
         final Config config = Config.getFixedConfig(ImmutableMap.of("ness.jms.test.enabled", "true",
-                                                                                          "ness.jms.test.connection-url", "failover:(tcp://127.0.0.1:65534?daemon=true)?maxReconnectAttempts=10"));;
+                                                                                          "ness.jms.test.connection-url", "failover:(tcp://127.0.0.1:65534?daemon=true)?maxReconnectAttempts=10"));
         final Injector injector = Guice.createInjector(Stage.PRODUCTION,
                                                        new ConfigModule(config),
                                                        new JmsModule(config, "test"));

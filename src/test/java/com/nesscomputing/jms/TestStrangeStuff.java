@@ -85,6 +85,8 @@ public class TestStrangeStuff
         for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertTrue(topicProducer.isConnected());
         Assert.assertFalse(topicConsumer.isConnected());
@@ -131,6 +133,8 @@ public class TestStrangeStuff
         for (int i = 0; i < 100 && !topicProducer.isEmpty(); i++) {
             Thread.sleep(10L);
         }
+        Thread.sleep(100L);
+
         Assert.assertTrue(topicProducer.isEmpty());
         Assert.assertTrue(topicProducer.isConnected());
         Assert.assertFalse(topicConsumer.isConnected());

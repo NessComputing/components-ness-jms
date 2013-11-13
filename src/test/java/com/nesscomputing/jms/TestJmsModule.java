@@ -29,8 +29,6 @@ import com.google.inject.Stage;
 import com.google.inject.name.Names;
 import com.nesscomputing.config.Config;
 import com.nesscomputing.config.ConfigModule;
-import com.nesscomputing.jms.JmsConfig;
-import com.nesscomputing.jms.JmsModule;
 
 public class TestJmsModule
 {

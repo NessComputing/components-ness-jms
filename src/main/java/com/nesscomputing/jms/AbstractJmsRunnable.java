@@ -82,6 +82,7 @@ public abstract class AbstractJmsRunnable implements Runnable
     }
 
     @Override
+    @SuppressWarnings({"PMD.PreserveStackTrace", "PMD.ExceptionAsFlowControl"})
     public void run()
     {
         LOG.debug("Starting %s for '%s'", getServiceType(), name);
